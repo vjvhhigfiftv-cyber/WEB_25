@@ -11,8 +11,17 @@ from datetime import datetime, timedelta
 import json
 import os
 
-TOKEN = "8943109859:AAFO07OxwDND2yrz7oSSNrTSm0tEgQ0stoI"
-ADMIN_ID = 6040546032
+TOKEN = os.getenv("BOT_TOKEN", "").strip()
+if not TOKEN:
+    raise RuntimeError(
+        "BOT_TOKEN is not set. Add your Telegram bot token as an environment variable."
+    )
+
+try:
+    ADMIN_ID = int(os.getenv("ADMIN_ID", "6040546032"))
+except ValueError:
+    raise RuntimeError("ADMIN_ID must be a valid integer.")
+
 bot = telebot.TeleBot(TOKEN)
 
 conn = sqlite3.connect("bot.db", check_same_thread=False)
@@ -156,6 +165,7 @@ PREMIUM_PRICE = 500
 PREMIUM_DURATION = 30
 
 CHAT_BONUS_URL = "https://t.me/blacke13"
+CHAT_BONUS_CHANNEL = "@blacke13"
 CHAT_BONUS_AMOUNT = 300
 WEBSITE_URL = "https://black-hub-central.lovable.app/"
 
@@ -310,26 +320,26 @@ def get_force_join_kb():
     keyboard = []
     if channel:
         keyboard.append([{"text": "القناة الرسمية", "url": f"https://t.me/{channel}"}])
-    keyboard.append([{"text": "تحقق من الانضمام", "callback_data": "check_join", "style": "success", "icon_custom_emoji_id": EMOJI_SUCCESS}])
+    keyboard.append([{"text": "تحقق من الانضمام", "callback_data": "check_join"}])
     return keyboard
 
 def _main_kb():
     keyboard = [
         [
-            {"text": "المتجر", "callback_data": "shop", "style": "primary", "icon_custom_emoji_id": EMOJI_DIAMOND},
-            {"text": "رصيدي", "callback_data": "balance", "style": "success", "icon_custom_emoji_id": EMOJI_MONEY}
+            {"text": "المتجر", "callback_data": "shop"},
+            {"text": "رصيدي", "callback_data": "balance"}
         ],
         [
-            {"text": "المكافآت", "callback_data": "rewards_menu", "style": "primary", "icon_custom_emoji_id": EMOJI_GIFT},
-            {"text": "الإحالات", "callback_data": "refs", "style": "success", "icon_custom_emoji_id": EMOJI_HEART}
+            {"text": "المكافآت", "callback_data": "rewards_menu"},
+            {"text": "الإحالات", "callback_data": "refs"}
         ],
         [
-            {"text": "المميزات", "callback_data": "premium_info", "style": "primary", "icon_custom_emoji_id": EMOJI_STAR},
-            {"text": "كوبون خصم", "callback_data": "coupon_menu", "style": "success", "icon_custom_emoji_id": EMOJI_KEY}
+            {"text": "المميزات", "callback_data": "premium_info"},
+            {"text": "كوبون خصم", "callback_data": "coupon_menu"}
         ],
         [
-            {"text": "الإحصائيات", "callback_data": "my_stats", "style": "primary", "icon_custom_emoji_id": EMOJI_LIST},
-            {"text": "الدعم الفني", "callback_data": "support", "style": "success", "icon_custom_emoji_id": EMOJI_SHIELD}
+            {"text": "الإحصائيات", "callback_data": "my_stats"},
+            {"text": "الدعم الفني", "callback_data": "support"}
         ]
     ]
     return keyboard
@@ -337,31 +347,31 @@ def _main_kb():
 def _admin_kb():
     keyboard = [
         [
-            {"text": "إضافة سلعة", "callback_data": "add_product", "style": "success", "icon_custom_emoji_id": EMOJI_SPARKLES},
-            {"text": "إدارة السلع", "callback_data": "manage_products", "style": "primary", "icon_custom_emoji_id": EMOJI_LIST}
+            {"text": "إضافة سلعة", "callback_data": "add_product"},
+            {"text": "إدارة السلع", "callback_data": "manage_products"}
         ],
         [
-            {"text": "إدارة الجوائز", "callback_data": "rewards_admin", "style": "primary", "icon_custom_emoji_id": EMOJI_GIFT},
-            {"text": "إدارة المستخدمين", "callback_data": "users_admin", "style": "success", "icon_custom_emoji_id": EMOJI_HEART}
+            {"text": "إدارة الجوائز", "callback_data": "rewards_admin"},
+            {"text": "إدارة المستخدمين", "callback_data": "users_admin"}
         ],
         [
-            {"text": "إدارة الروابط", "callback_data": "links_admin", "style": "primary", "icon_custom_emoji_id": EMOJI_KEY},
-            {"text": "إدارة الكوبونات", "callback_data": "coupons_admin", "style": "success", "icon_custom_emoji_id": EMOJI_MAIL}
+            {"text": "إدارة الروابط", "callback_data": "links_admin"},
+            {"text": "إدارة الكوبونات", "callback_data": "coupons_admin"}
         ],
         [
-            {"text": "طلبات السحب", "callback_data": "withdrawals_admin", "style": "primary", "icon_custom_emoji_id": EMOJI_MONEY},
-            {"text": "التذاكر", "callback_data": "tickets_admin", "style": "success", "icon_custom_emoji_id": EMOJI_SHIELD}
+            {"text": "طلبات السحب", "callback_data": "withdrawals_admin"},
+            {"text": "التذاكر", "callback_data": "tickets_admin"}
         ],
         [
-            {"text": "بث شامل", "callback_data": "broadcast", "style": "danger", "icon_custom_emoji_id": EMOJI_ROCKET},
-            {"text": "الإحصائيات", "callback_data": "stats", "style": "primary", "icon_custom_emoji_id": EMOJI_STAR}
+            {"text": "بث شامل", "callback_data": "broadcast"},
+            {"text": "الإحصائيات", "callback_data": "stats"}
         ],
         [
-            {"text": "الإعدادات المتقدمة", "callback_data": "advanced_settings", "style": "primary", "icon_custom_emoji_id": EMOJI_SETTINGS},
-            {"text": "بحث عن مستخدم", "callback_data": "search_user", "style": "success", "icon_custom_emoji_id": EMOJI_TARGET}
+            {"text": "الإعدادات المتقدمة", "callback_data": "advanced_settings"},
+            {"text": "بحث عن مستخدم", "callback_data": "search_user"}
         ],
         [
-            {"text": "إعادة تشغيل", "callback_data": "restart_bot", "style": "danger", "icon_custom_emoji_id": EMOJI_FIRE}
+            {"text": "إعادة تشغيل", "callback_data": "restart_bot"}
         ]
     ]
     return keyboard
@@ -473,10 +483,10 @@ def _cb_handler(call):
         if cats:
             for cat in cats:
                 if cat[0]:
-                    keyboard.append([{"text": f"📂 {cat[0]}", "callback_data": f"cat_{cat[0]}", "style": "primary", "icon_custom_emoji_id": EMOJI_LIST}])
-        keyboard.append([{"text": "كل المنتجات", "callback_data": "all_products", "style": "success", "icon_custom_emoji_id": EMOJI_DIAMOND}])
-        keyboard.append([{"text": "بحث", "callback_data": "search_product", "style": "primary", "icon_custom_emoji_id": EMOJI_TARGET}])
-        keyboard.append([{"text": "رجوع", "callback_data": "back_main", "style": "danger", "icon_custom_emoji_id": EMOJI_FAIL}])
+                    keyboard.append([{"text": f"📂 {cat[0]}", "callback_data": f"cat_{cat[0]}"}])
+        keyboard.append([{"text": "كل المنتجات", "callback_data": "all_products"}])
+        keyboard.append([{"text": "بحث", "callback_data": "search_product"}])
+        keyboard.append([{"text": "رجوع", "callback_data": "back_main"}])
         bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_DIAMOND}">🛒</tg-emoji> <b>المتجر</b>\n<blockquote>اختر التصنيف أو تصفح كل المنتجات</blockquote>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
     
     elif data.startswith("cat_"):
@@ -489,11 +499,11 @@ def _cb_handler(call):
                 price_text = f"{price}"
                 if disc > 0:
                     price_text = f"{oprice}->{price} (-{disc}%)"
-                keyboard.append([{"text": f"{name} | {price_text} | {stock}قطعة", "callback_data": f"view_{pid}", "style": "primary", "icon_custom_emoji_id": EMOJI_DIAMOND}])
-            keyboard.append([{"text": "تصنيفات", "callback_data": "shop", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}])
+                keyboard.append([{"text": f"{name} | {price_text} | {stock}قطعة", "callback_data": f"view_{pid}"}])
+            keyboard.append([{"text": "تصنيفات", "callback_data": "shop"}])
             bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_LIST}">📂</tg-emoji> <b>{cat}</b>\n<blockquote>اختر منتجاً</blockquote>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
         else:
-            keyboard = [[{"text": "رجوع", "callback_data": "shop", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]
+            keyboard = [[{"text": "رجوع", "callback_data": "shop"}]]
             bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>لا توجد منتجات في هذا التصنيف</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
     
     elif data == "all_products":
@@ -506,16 +516,16 @@ def _cb_handler(call):
                     price_text = f"<s>{oprice}</s> {price} (-{disc}%)"
                 keyboard = [
                     [
-                        {"text": "شراء", "callback_data": f"buy_{pid}", "style": "success", "icon_custom_emoji_id": EMOJI_MONEY},
-                        {"text": "عرض", "callback_data": f"view_{pid}", "style": "primary", "icon_custom_emoji_id": EMOJI_LIST}
+                        {"text": "شراء", "callback_data": f"buy_{pid}"},
+                        {"text": "عرض", "callback_data": f"view_{pid}"}
                     ]
                 ]
                 product_text = f'<tg-emoji emoji-id="{EMOJI_DIAMOND}">📦</tg-emoji> <b>{name}</b>\n<blockquote expandable>\nالسعر: {price_text} {_cfg("currency")}\nالمخزون: {stock}\nالتصنيف: {cat or "بدون تصنيف"}\n</blockquote>'
                 bot.send_message(uid, product_text, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
-            keyboard2 = [[{"text": "تصنيفات", "callback_data": "shop", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]
+            keyboard2 = [[{"text": "تصنيفات", "callback_data": "shop"}]]
             bot.send_message(uid, "••••••••••••••••••", reply_markup=json.dumps({"inline_keyboard": keyboard2}))
         else:
-            keyboard = [[{"text": "رجوع", "callback_data": "shop", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]
+            keyboard = [[{"text": "رجوع", "callback_data": "shop"}]]
             bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>لا توجد منتجات متاحة</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
     
     elif data.startswith("view_"):
@@ -526,10 +536,10 @@ def _cb_handler(call):
             _, name, desc, price, oprice, stock, sold, delivery, content, cat, img, active, added, disc = p
             keyboard = [
                 [
-                    {"text": "شراء", "callback_data": f"buy_{pid}", "style": "success", "icon_custom_emoji_id": EMOJI_MONEY},
-                    {"text": "تقييم", "callback_data": f"review_{pid}", "style": "primary", "icon_custom_emoji_id": EMOJI_STAR}
+                    {"text": "شراء", "callback_data": f"buy_{pid}"},
+                    {"text": "تقييم", "callback_data": f"review_{pid}"}
                 ],
-                [{"text": "رجوع", "callback_data": "shop", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]
+                [{"text": "رجوع", "callback_data": "shop"}]
             ]
             price_text = f"{price} {_cfg('currency')}"
             if disc > 0:
@@ -573,9 +583,9 @@ def _cb_handler(call):
             final_price = int(price * 0.9)
         
         keyboard = [
-            [{"text": "تأكيد الشراء", "callback_data": f"confirm_buy_{pid}", "style": "success", "icon_custom_emoji_id": EMOJI_SUCCESS}],
-            [{"text": "استخدام كوبون", "callback_data": f"use_coupon_{pid}", "style": "primary", "icon_custom_emoji_id": EMOJI_KEY}],
-            [{"text": "رجوع", "callback_data": f"view_{pid}", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]
+            [{"text": "تأكيد الشراء", "callback_data": f"confirm_buy_{pid}"}],
+            [{"text": "استخدام كوبون", "callback_data": f"use_coupon_{pid}"}],
+            [{"text": "رجوع", "callback_data": f"view_{pid}"}]
         ]
         
         text = (
@@ -622,27 +632,27 @@ def _cb_handler(call):
         )
         keyboard = [
             [
-                {"text": "سحب", "callback_data": "withdraw", "style": "danger", "icon_custom_emoji_id": EMOJI_MONEY},
-                {"text": "تفاصيل", "callback_data": "my_stats", "style": "primary", "icon_custom_emoji_id": EMOJI_LIST}
+                {"text": "سحب", "callback_data": "withdraw"},
+                {"text": "تفاصيل", "callback_data": "my_stats"}
             ],
-            [{"text": "رجوع", "callback_data": "back_main", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]
+            [{"text": "رجوع", "callback_data": "back_main"}]
         ]
         bot.edit_message_text(text, uid, call.message.message_id, parse_mode="HTML", reply_markup=json.dumps({"inline_keyboard": keyboard}))
     
     elif data == "rewards_menu":
         keyboard = [
-            [{"text": "الجائزة اليومية", "callback_data": "daily", "style": "success", "icon_custom_emoji_id": EMOJI_GIFT}],
-            [{"text": f"انضم لدردشة بلاك - {CHAT_BONUS_AMOUNT}💎", "callback_data": "chat_bonus", "style": "primary", "icon_custom_emoji_id": EMOJI_HEART}],
-            [{"text": "تفعيل كوبون", "callback_data": "activate_coupon", "style": "primary", "icon_custom_emoji_id": EMOJI_KEY}],
-            [{"text": "روابط النقاط", "callback_data": "points_links", "style": "primary", "icon_custom_emoji_id": EMOJI_MAIL}],
-            [{"text": "🌐 موقع بلاك ويب", "url": WEBSITE_URL}, {"text": "رجوع", "callback_data": "back_main", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]
+            [{"text": "الجائزة اليومية", "callback_data": "daily"}],
+            [{"text": f"انضم لدردشة بلاك - {CHAT_BONUS_AMOUNT}💎", "callback_data": "chat_bonus"}],
+            [{"text": "تفعيل كوبون", "callback_data": "activate_coupon"}],
+            [{"text": "روابط النقاط", "callback_data": "points_links"}],
+            [{"text": "🌐 موقع بلاك ويب", "url": WEBSITE_URL}, {"text": "رجوع", "callback_data": "back_main"}]
         ]
         bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_GIFT}">🎁</tg-emoji> <b>المكافآت والجوائز</b>\n<blockquote expandable>\n🎁 جائزة يومية\n👑 انضم لدردشة بلاك واحصل على {CHAT_BONUS_AMOUNT} {_cfg("currency")} هدية\n🎫 كوبونات خصم\n🔗 روابط نقاط\n</blockquote>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
     
     elif data == "daily":
         st = _cfg("daily_status")
         if st == "off":
-            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_FAIL}">🚫</tg-emoji> <b>الجائزة اليومية مغلقة حالياً</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "rewards_menu", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]}))
+            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_FAIL}">🚫</tg-emoji> <b>الجائزة اليومية مغلقة حالياً</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "rewards_menu"}]]}))
             return
         cur.execute("SELECT last_daily FROM users WHERE user_id = ?", (uid,))
         last = cur.fetchone()[0]
@@ -651,7 +661,7 @@ def _cb_handler(call):
             remaining = 86400 - (now - last)
             hours = remaining // 3600
             minutes = (remaining % 3600) // 60
-            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_TIME}">⏰</tg-emoji> <b>استلمت جائزتك اليوم!</b>\n<blockquote>عودة بعد: {hours}h {minutes}m</blockquote>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "rewards_menu", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]}))
+            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_TIME}">⏰</tg-emoji> <b>استلمت جائزتك اليوم!</b>\n<blockquote>عودة بعد: {hours}h {minutes}m</blockquote>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "rewards_menu"}]]}))
         else:
             pts = int(_cfg("daily_points"))
             if is_premium(uid):
@@ -660,7 +670,7 @@ def _cb_handler(call):
                         (pts, pts, now, uid))
             conn.commit()
             add_notification(uid, f"حصلت على الجائزة اليومية: {pts} {_cfg('currency')}")
-            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_GIFT}">🎉</tg-emoji> <b>مبروك! حصلت على {pts} {_cfg("currency")}</b>\n{":star: +50% مكافأة العضوية المميزة" if is_premium(uid) else ""}', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "rewards_menu", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]}))
+            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_GIFT}">🎉</tg-emoji> <b>مبروك! حصلت على {pts} {_cfg("currency")}</b>\n{":star: +50% مكافأة العضوية المميزة" if is_premium(uid) else ""}', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "rewards_menu"}]]}))
     
     elif data == "activate_coupon":
         msg = bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_KEY}">🎫</tg-emoji> <b>أرسل كود الكوبون</b>', uid, call.message.message_id, parse_mode='HTML')
@@ -668,7 +678,7 @@ def _cb_handler(call):
         bot.register_next_step_handler(msg, _handle_coupon_activation)
     
     elif data == "points_links":
-        bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_MAIL}">🔗</tg-emoji> <b>أرسل كود رابط النقاط</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "rewards_menu", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]}))
+        bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_MAIL}">🔗</tg-emoji> <b>أرسل كود رابط النقاط</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "rewards_menu"}]]}))
         user_states[uid] = {"action": "use_points_link"}
     
     elif data == "refs":
@@ -686,9 +696,9 @@ def _cb_handler(call):
         keyboard = [
             [
                 {"text": "مشاركة", "url": f"https://t.me/share/url?url={link}&text=انضم%20لأفضل%20متجر"},
-                {"text": "نسخ", "callback_data": f"copy_ref_{uid}", "style": "primary", "icon_custom_emoji_id": EMOJI_LIST}
+                {"text": "نسخ", "callback_data": f"copy_ref_{uid}"}
             ],
-            [{"text": "رجوع", "callback_data": "back_main", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]
+            [{"text": "رجوع", "callback_data": "back_main"}]
         ]
         bot.edit_message_text(text, uid, call.message.message_id, parse_mode="HTML", reply_markup=json.dumps({"inline_keyboard": keyboard}))
     
@@ -727,19 +737,19 @@ def _cb_handler(call):
             )
         keyboard = []
         if not premium:
-            keyboard.append([{"text": "شراء العضوية", "callback_data": "buy_premium", "style": "success", "icon_custom_emoji_id": EMOJI_STAR}])
-        keyboard.append([{"text": "رجوع", "callback_data": "back_main", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}])
+            keyboard.append([{"text": "شراء العضوية", "callback_data": "buy_premium"}])
+        keyboard.append([{"text": "رجوع", "callback_data": "back_main"}])
         bot.edit_message_text(text, uid, call.message.message_id, parse_mode="HTML", reply_markup=json.dumps({"inline_keyboard": keyboard}))
     
     elif data == "buy_premium":
         stats = get_user_stats(uid)
         if stats['balance'] < PREMIUM_PRICE:
-            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>رصيدك غير كافٍ</b>\n<blockquote>تحتاج {PREMIUM_PRICE} {_cfg("currency")}</blockquote>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "premium_info", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]}))
+            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>رصيدك غير كافٍ</b>\n<blockquote>تحتاج {PREMIUM_PRICE} {_cfg("currency")}</blockquote>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "premium_info"}]]}))
             return
         keyboard = [
             [
-                {"text": "تأكيد", "callback_data": "confirm_premium", "style": "success", "icon_custom_emoji_id": EMOJI_SUCCESS},
-                {"text": "إلغاء", "callback_data": "premium_info", "style": "danger", "icon_custom_emoji_id": EMOJI_FAIL}
+                {"text": "تأكيد", "callback_data": "confirm_premium"},
+                {"text": "إلغاء", "callback_data": "premium_info"}
             ]
         ]
         bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_MONEY}">🛒</tg-emoji> <b>تأكيد شراء العضوية المميزة بـ {PREMIUM_PRICE} {_cfg("currency")}؟</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
@@ -753,7 +763,7 @@ def _cb_handler(call):
                     (PREMIUM_PRICE, PREMIUM_PRICE, int(time.time()) + PREMIUM_DURATION * 86400, uid))
         conn.commit()
         add_notification(uid, "تم تفعيل العضوية المميزة بنجاح!")
-        bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_GIFT}">🎉</tg-emoji> <b>مبروك! تم تفعيل العضوية المميزة بنجاح!</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "back_main", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]}))
+        bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_GIFT}">🎉</tg-emoji> <b>مبروك! تم تفعيل العضوية المميزة بنجاح!</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "back_main"}]]}))
         try:
             bot.send_message(ADMIN_ID, f'<tg-emoji emoji-id="{EMOJI_MONEY}">💰</tg-emoji> <b>شراء عضوية مميزة</b>\n<blockquote>المستخدم: <code>{uid}</code>\nالمبلغ: {PREMIUM_PRICE} {_cfg("currency")}</blockquote>', parse_mode='HTML')
         except:
@@ -761,8 +771,8 @@ def _cb_handler(call):
     
     elif data == "coupon_menu":
         keyboard = [
-            [{"text": "تفعيل كوبون", "callback_data": "activate_coupon", "style": "success", "icon_custom_emoji_id": EMOJI_KEY}],
-            [{"text": "رجوع", "callback_data": "back_main", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]
+            [{"text": "تفعيل كوبون", "callback_data": "activate_coupon"}],
+            [{"text": "رجوع", "callback_data": "back_main"}]
         ]
         bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_KEY}">🎫</tg-emoji> <b>الكوبونات</b>\n<blockquote>يمكنك تفعيل كوبون الخصم للحصول على تخفيض</blockquote>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
     
@@ -785,13 +795,13 @@ def _cb_handler(call):
             f'الإحالات: {stats["ref_count"]}\n'
             f'</blockquote>'
         )
-        bot.edit_message_text(text, uid, call.message.message_id, parse_mode="HTML", reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "back_main", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]}))
+        bot.edit_message_text(text, uid, call.message.message_id, parse_mode="HTML", reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "back_main"}]]}))
     
     elif data == "support":
         keyboard = [
-            [{"text": "فتح تذكرة", "callback_data": "open_ticket", "style": "primary", "icon_custom_emoji_id": EMOJI_MAIL}],
+            [{"text": "فتح تذكرة", "callback_data": "open_ticket"}],
             [{"text": "المطور", "url": f"https://t.me/{DEVELOPER_USERNAME}"}],
-            [{"text": "رجوع", "callback_data": "back_main", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]
+            [{"text": "رجوع", "callback_data": "back_main"}]
         ]
         bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_SHIELD}">💬</tg-emoji> <b>الدعم الفني</b>\n<blockquote>للدعم تواصل مع المطور أو افتح تذكرة</blockquote>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
     
@@ -802,18 +812,18 @@ def _cb_handler(call):
     
     elif data == "withdraw":
         if _cfg("withdraw_status") == "off":
-            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_FAIL}">🚫</tg-emoji> <b>السحب مغلق حالياً</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "balance", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]}))
+            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_FAIL}">🚫</tg-emoji> <b>السحب مغلق حالياً</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "balance"}]]}))
             return
         min_withdraw = int(_cfg("min_withdraw"))
         stats = get_user_stats(uid)
         if stats['balance'] < min_withdraw:
-            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>الحد الأدنى للسحب: {min_withdraw} {_cfg("currency")}</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "balance", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]}))
+            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>الحد الأدنى للسحب: {min_withdraw} {_cfg("currency")}</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "balance"}]]}))
             return
         payment_methods = _cfg("payment_methods").split(",")
         keyboard = []
         for method in payment_methods:
-            keyboard.append([{"text": f"💳 {method.strip()}", "callback_data": f"withdraw_method_{method.strip()}", "style": "primary", "icon_custom_emoji_id": EMOJI_MONEY}])
-        keyboard.append([{"text": "رجوع", "callback_data": "balance", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}])
+            keyboard.append([{"text": f"💳 {method.strip()}", "callback_data": f"withdraw_method_{method.strip()}"}])
+        keyboard.append([{"text": "رجوع", "callback_data": "balance"}])
         bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_MONEY}">💸</tg-emoji> <b>سحب الرصيد</b>\n<blockquote>رصيدك: {stats["balance"]} {_cfg("currency")}\nاختر طريقة الدفع</blockquote>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
     
     elif data.startswith("withdraw_method_"):
@@ -832,7 +842,7 @@ def _cb_handler(call):
         keyboard = []
         row = []
         for i in range(1, 6):
-            row.append({"text": f"{i}⭐", "callback_data": f"rate_{pid}_{i}", "style": "primary", "icon_custom_emoji_id": EMOJI_STAR})
+            row.append({"text": f"{i}⭐", "callback_data": f"rate_{pid}_{i}"})
             if len(row) == 3:
                 keyboard.append(row)
                 row = []
@@ -865,14 +875,14 @@ def _cb_handler(call):
                 uid, call.message.message_id, parse_mode='HTML',
                 reply_markup=json.dumps({"inline_keyboard": [
                     [{"text": "👑 دردشة بلاك", "url": CHAT_BONUS_URL}, {"text": "🌐 موقع بلاك ويب", "url": WEBSITE_URL}],
-                    [{"text": "رجوع", "callback_data": "rewards_menu", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]
+                    [{"text": "رجوع", "callback_data": "rewards_menu"}]
                 ]}))
             return
         keyboard = [
             [{"text": "👑 انضم لدردشة بلاك VIP", "url": CHAT_BONUS_URL}],
-            [{"text": "✅ تحققت من الانضمام", "callback_data": "verify_chat_join", "style": "success", "icon_custom_emoji_id": EMOJI_SUCCESS}],
+            [{"text": "✅ تحققت من الانضمام", "callback_data": "verify_chat_join"}],
             [{"text": "🌐 زيارة موقع بلاك ويب", "url": WEBSITE_URL}],
-            [{"text": "رجوع", "callback_data": "rewards_menu", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]
+            [{"text": "رجوع", "callback_data": "rewards_menu"}]
         ]
         bot.edit_message_text(
             f'<tg-emoji emoji-id="{EMOJI_HEART}">🎁</tg-emoji> <b>مكافأة {CHAT_BONUS_AMOUNT} {_cfg("currency")} - دردشة بلاك</b>\n'
@@ -893,7 +903,7 @@ def _cb_handler(call):
             bot.answer_callback_query(call.id, "تم استلام المكافأة مسبقاً", show_alert=True)
             return
         try:
-            m = bot.get_chat_member(CHAT_BONUS_URL, uid)
+            m = bot.get_chat_member(CHAT_BONUS_CHANNEL, uid)
             if m.status in ['left', 'kicked']:
                 bot.answer_callback_query(call.id, "لم تنضم بعد! انضم أولاً", show_alert=True)
                 bot.edit_message_text(
@@ -902,8 +912,8 @@ def _cb_handler(call):
                     uid, call.message.message_id, parse_mode='HTML',
                     reply_markup=json.dumps({"inline_keyboard": [
                         [{"text": "👑 انضم الآن", "url": CHAT_BONUS_URL}],
-                        [{"text": "✅ تحقق مجدداً", "callback_data": "verify_chat_join", "style": "success", "icon_custom_emoji_id": EMOJI_SUCCESS}],
-                        [{"text": "رجوع", "callback_data": "rewards_menu", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]
+                        [{"text": "✅ تحقق مجدداً", "callback_data": "verify_chat_join"}],
+                        [{"text": "رجوع", "callback_data": "rewards_menu"}]
                     ]}))
                 return
             cur.execute("UPDATE users SET balance = balance + ?, total_earned = total_earned + ?, chat_bonus_claimed = 1 WHERE user_id = ?",
@@ -919,7 +929,7 @@ def _cb_handler(call):
                 uid, call.message.message_id, parse_mode='HTML',
                 reply_markup=json.dumps({"inline_keyboard": [
                     [{"text": "👑 الدردشة", "url": CHAT_BONUS_URL}, {"text": "🌐 موقع بلاك", "url": WEBSITE_URL}],
-                    [{"text": "القائمة الرئيسية", "callback_data": "back_main", "style": "success", "icon_custom_emoji_id": EMOJI_CROWN}]
+                    [{"text": "القائمة الرئيسية", "callback_data": "back_main"}]
                 ]}))
             try:
                 bot.send_message(ADMIN_ID, f'<tg-emoji emoji-id="{EMOJI_HEART}">🎁</tg-emoji> <b>مكافأة دردشة مُستلَمة</b>\n<blockquote>المستخدم: <code>{uid}</code>\nالمبلغ: {CHAT_BONUS_AMOUNT} {_cfg("currency")}</blockquote>', parse_mode='HTML')
@@ -949,8 +959,6 @@ def process_purchase(uid, pid, msg, coupon_code=None):
                 disc_percent, max_uses, used_count, expire_at, min_purchase, is_active = coupon
                 if is_active and used_count < max_uses and int(time.time()) < expire_at and price >= min_purchase:
                     final_price = int(price * (1 - disc_percent / 100))
-                    cur.execute("UPDATE coupons SET used_count = used_count + 1 WHERE code = ?", (coupon_code,))
-                    conn.commit()
         
         if is_premium(uid):
             final_price = int(final_price * 0.9)
@@ -964,6 +972,9 @@ def process_purchase(uid, pid, msg, coupon_code=None):
         cur.execute("UPDATE users SET balance = balance - ?, total_spent = total_spent + ? WHERE user_id = ?",
                     (final_price, final_price, uid))
         cur.execute("UPDATE products SET stock = stock - 1, sold = sold + 1 WHERE id = ?", (pid,))
+        if coupon_code:
+            cur.execute("UPDATE coupons SET used_count = used_count + 1 WHERE code = ? AND used_count < max_uses",
+                        (coupon_code,))
         cur.execute("INSERT INTO purchases (user_id, product_id, product_name, price, delivery_type, content, purchased_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
                     (uid, pid, name, final_price, delivery, content, int(time.time())))
         conn.commit()
@@ -997,11 +1008,11 @@ def _admin_handlers(call, uid):
             keyboard = []
             for pid, name, price, stock, active, cat in prods:
                 status = "🟢" if active and stock > 0 else "🔴"
-                keyboard.append([{"text": f"{status} {name} | {price}💎 | {stock}قطعة", "callback_data": f"admin_prod_{pid}", "style": "primary", "icon_custom_emoji_id": EMOJI_LIST}])
-            keyboard.append([{"text": "رجوع", "callback_data": "back_admin", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}])
+                keyboard.append([{"text": f"{status} {name} | {price}💎 | {stock}قطعة", "callback_data": f"admin_prod_{pid}"}])
+            keyboard.append([{"text": "رجوع", "callback_data": "back_admin"}])
             bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_LIST}">📦</tg-emoji> <b>إدارة المنتجات</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
         else:
-            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>لا توجد منتجات</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "back_admin", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]}))
+            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>لا توجد منتجات</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "back_admin"}]]}))
     
     elif data.startswith("admin_prod_"):
         pid = int(data[11:])
@@ -1011,13 +1022,13 @@ def _admin_handlers(call, uid):
             _, name, desc, price, oprice, stock, sold, delivery, content, cat, img, active, added, disc = p
             keyboard = [
                 [
-                    {"text": "تعديل", "callback_data": f"edit_prod_{pid}", "style": "primary", "icon_custom_emoji_id": EMOJI_SETTINGS},
-                    {"text": "حذف", "callback_data": f"del_prod_{pid}", "style": "danger", "icon_custom_emoji_id": EMOJI_FAIL}
+                    {"text": "تعديل", "callback_data": f"edit_prod_{pid}"},
+                    {"text": "حذف", "callback_data": f"del_prod_{pid}"}
                 ],
                 [
-                    {"text": "تبديل الحالة", "callback_data": f"toggle_prod_{pid}", "style": "success", "icon_custom_emoji_id": EMOJI_ROCKET}
+                    {"text": "تبديل الحالة", "callback_data": f"toggle_prod_{pid}"}
                 ],
-                [{"text": "رجوع", "callback_data": "manage_products", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]
+                [{"text": "رجوع", "callback_data": "manage_products"}]
             ]
             text = (
                 f'<tg-emoji emoji-id="{EMOJI_DIAMOND}">📦</tg-emoji> <b>{name}</b>\n'
@@ -1046,8 +1057,8 @@ def _admin_handlers(call, uid):
         pid = int(data[9:])
         keyboard = [
             [
-                {"text": "نعم", "callback_data": f"confirm_del_{pid}", "style": "danger", "icon_custom_emoji_id": EMOJI_FAIL},
-                {"text": "لا", "callback_data": f"admin_prod_{pid}", "style": "success", "icon_custom_emoji_id": EMOJI_SUCCESS}
+                {"text": "نعم", "callback_data": f"confirm_del_{pid}"},
+                {"text": "لا", "callback_data": f"admin_prod_{pid}"}
             ]
         ]
         bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_WARNING}">⚠️</tg-emoji> <b>هل أنت متأكد من حذف المنتج؟</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
@@ -1056,19 +1067,19 @@ def _admin_handlers(call, uid):
         pid = int(data[12:])
         cur.execute("DELETE FROM products WHERE id = ?", (pid,))
         conn.commit()
-        bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_SUCCESS}">✅</tg-emoji> <b>تم حذف المنتج</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "manage_products", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]}))
+        bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_SUCCESS}">✅</tg-emoji> <b>تم حذف المنتج</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "manage_products"}]]}))
     
     elif data == "rewards_admin":
         keyboard = [
             [
-                {"text": "فتح/غلق اليومية", "callback_data": "toggle_daily", "style": "success", "icon_custom_emoji_id": EMOJI_GIFT},
-                {"text": "نقاط اليومية", "callback_data": "set_daily_points", "style": "primary", "icon_custom_emoji_id": EMOJI_STAR}
+                {"text": "فتح/غلق اليومية", "callback_data": "toggle_daily"},
+                {"text": "نقاط اليومية", "callback_data": "set_daily_points"}
             ],
             [
-                {"text": "نقاط الإحالة", "callback_data": "set_ref_points", "style": "primary", "icon_custom_emoji_id": EMOJI_HEART},
-                {"text": "مكافأة الترحيب", "callback_data": "set_welcome_bonus", "style": "success", "icon_custom_emoji_id": EMOJI_SPARKLES}
+                {"text": "نقاط الإحالة", "callback_data": "set_ref_points"},
+                {"text": "مكافأة الترحيب", "callback_data": "set_welcome_bonus"}
             ],
-            [{"text": "رجوع", "callback_data": "back_admin", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]
+            [{"text": "رجوع", "callback_data": "back_admin"}]
         ]
         bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_GIFT}">🎁</tg-emoji> <b>إدارة الجوائز</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
     
@@ -1107,7 +1118,7 @@ def _admin_handlers(call, uid):
             text += f'• <code>{u[0]}</code> - {u[1]}💎\n'
         text += f'</blockquote>'
         keyboard = [
-            [{"text": "رجوع", "callback_data": "back_admin", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]
+            [{"text": "رجوع", "callback_data": "back_admin"}]
         ]
         bot.edit_message_text(text, uid, call.message.message_id, parse_mode="HTML", reply_markup=json.dumps({"inline_keyboard": keyboard}))
     
@@ -1120,9 +1131,9 @@ def _admin_handlers(call, uid):
                 status = "🟢" if used < mx and exp > int(time.time()) else "🔴"
                 link_url = f"https://t.me/{BOT_USERNAME}?start={code}"
                 keyboard.append([{"text": f"{status} {pts}💎 | {used}/{mx}", "url": link_url}])
-        keyboard.append([{"text": "رابط جديد", "callback_data": "make_link", "style": "success", "icon_custom_emoji_id": EMOJI_SPARKLES}])
-        keyboard.append([{"text": "حذف المنتهية", "callback_data": "delete_expired_links", "style": "danger", "icon_custom_emoji_id": EMOJI_FAIL}])
-        keyboard.append([{"text": "رجوع", "callback_data": "back_admin", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}])
+        keyboard.append([{"text": "رابط جديد", "callback_data": "make_link"}])
+        keyboard.append([{"text": "حذف المنتهية", "callback_data": "delete_expired_links"}])
+        keyboard.append([{"text": "رجوع", "callback_data": "back_admin"}])
         bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_KEY}">🔗</tg-emoji> <b>الروابط النشطة</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
     
     elif data == "make_link":
@@ -1137,8 +1148,8 @@ def _admin_handlers(call, uid):
     
     elif data == "coupons_admin":
         keyboard = [
-            [{"text": "كوبون جديد", "callback_data": "add_coupon", "style": "success", "icon_custom_emoji_id": EMOJI_KEY}],
-            [{"text": "رجوع", "callback_data": "back_admin", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]
+            [{"text": "كوبون جديد", "callback_data": "add_coupon"}],
+            [{"text": "رجوع", "callback_data": "back_admin"}]
         ]
         bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_KEY}">🎫</tg-emoji> <b>إدارة الكوبونات</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
     
@@ -1154,11 +1165,11 @@ def _admin_handlers(call, uid):
             keyboard = []
             for wid, user_id, amount, method, status, created in withdrawals:
                 status_emoji = "🟢" if status == "completed" else "🟡" if status == "pending" else "🔴"
-                keyboard.append([{"text": f"{status_emoji} {amount}💎 | {user_id}", "callback_data": f"admin_withdraw_{wid}", "style": "primary", "icon_custom_emoji_id": EMOJI_MONEY}])
-            keyboard.append([{"text": "رجوع", "callback_data": "back_admin", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}])
+                keyboard.append([{"text": f"{status_emoji} {amount}💎 | {user_id}", "callback_data": f"admin_withdraw_{wid}"}])
+            keyboard.append([{"text": "رجوع", "callback_data": "back_admin"}])
             bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_MONEY}">💰</tg-emoji> <b>طلبات السحب</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
         else:
-            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>لا توجد طلبات</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "back_admin", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]}))
+            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>لا توجد طلبات</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "back_admin"}]]}))
     
     elif data == "tickets_admin":
         cur.execute("SELECT id, user_id, subject, status FROM support_tickets WHERE status = 'open' ORDER BY created_at DESC LIMIT 10")
@@ -1166,19 +1177,19 @@ def _admin_handlers(call, uid):
         if tickets:
             keyboard = []
             for tid, user_id, subject, status in tickets:
-                keyboard.append([{"text": f"🟡 {user_id}: {subject[:20]}", "callback_data": f"admin_ticket_{tid}", "style": "primary", "icon_custom_emoji_id": EMOJI_MAIL}])
-            keyboard.append([{"text": "رجوع", "callback_data": "back_admin", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}])
+                keyboard.append([{"text": f"🟡 {user_id}: {subject[:20]}", "callback_data": f"admin_ticket_{tid}"}])
+            keyboard.append([{"text": "رجوع", "callback_data": "back_admin"}])
             bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_SHIELD}">💬</tg-emoji> <b>التذاكر المفتوحة</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
         else:
-            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_SUCCESS}">✅</tg-emoji> <b>لا توجد تذاكر مفتوحة</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "back_admin", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]}))
+            bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_SUCCESS}">✅</tg-emoji> <b>لا توجد تذاكر مفتوحة</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "back_admin"}]]}))
     
     elif data == "broadcast":
         keyboard = [
             [
-                {"text": "للجميع", "callback_data": "bc_all", "style": "success", "icon_custom_emoji_id": EMOJI_HEART},
-                {"text": "للمميزين", "callback_data": "bc_premium", "style": "primary", "icon_custom_emoji_id": EMOJI_STAR}
+                {"text": "للجميع", "callback_data": "bc_all"},
+                {"text": "للمميزين", "callback_data": "bc_premium"}
             ],
-            [{"text": "رجوع", "callback_data": "back_admin", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]
+            [{"text": "رجوع", "callback_data": "back_admin"}]
         ]
         bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_ROCKET}">📢</tg-emoji> <b>اختر نوع البث</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
     
@@ -1212,19 +1223,19 @@ def _admin_handlers(call, uid):
             f'إجمالي الأرصدة: {total_balance}💎\n'
             f'</blockquote>'
         )
-        bot.edit_message_text(text, uid, call.message.message_id, parse_mode="HTML", reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "back_admin", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]}))
+        bot.edit_message_text(text, uid, call.message.message_id, parse_mode="HTML", reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "back_admin"}]]}))
     
     elif data == "advanced_settings":
         keyboard = [
             [
-                {"text": "إدارة السحب", "callback_data": "toggle_withdraw", "style": "success", "icon_custom_emoji_id": EMOJI_MONEY},
-                {"text": "وضع الصيانة", "callback_data": "toggle_maintenance", "style": "primary", "icon_custom_emoji_id": EMOJI_SETTINGS}
+                {"text": "إدارة السحب", "callback_data": "toggle_withdraw"},
+                {"text": "وضع الصيانة", "callback_data": "toggle_maintenance"}
             ],
             [
-                {"text": "إعداد القناة", "callback_data": "set_channel", "style": "primary", "icon_custom_emoji_id": EMOJI_GLOBE},
-                {"text": "طرق الدفع", "callback_data": "set_payment_methods", "style": "success", "icon_custom_emoji_id": EMOJI_MAIL}
+                {"text": "إعداد القناة", "callback_data": "set_channel"},
+                {"text": "طرق الدفع", "callback_data": "set_payment_methods"}
             ],
-            [{"text": "رجوع", "callback_data": "back_admin", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]
+            [{"text": "رجوع", "callback_data": "back_admin"}]
         ]
         bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_SETTINGS}">⚙️</tg-emoji> <b>الإعدادات المتقدمة</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
     
@@ -1319,7 +1330,7 @@ def _handle_withdraw_details(msg):
             bot.send_message(ADMIN_ID, f'<tg-emoji emoji-id="{EMOJI_MONEY}">💰</tg-emoji> <b>طلب سحب جديد</b>\n<blockquote expandable>\nالمستخدم: <code>{uid}</code>\nالمبلغ: {amount} {_cfg("currency")}\nالطريقة: {method}\nالتفاصيل: {details}\n</blockquote>', parse_mode='HTML')
         except:
             pass
-    del user_states[uid]
+    user_states.pop(uid, None)
 
 def _handle_review_comment(msg):
     uid = msg.from_user.id
@@ -1333,7 +1344,7 @@ def _handle_review_comment(msg):
                     (uid, pid, rating, comment, int(time.time())))
         conn.commit()
         bot.send_message(uid, f'<tg-emoji emoji-id="{EMOJI_STAR}">✅</tg-emoji> <b>شكراً لتقييمك!</b>', parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": _main_kb()}))
-    del user_states[uid]
+    user_states.pop(uid, None)
 
 def _handle_search_product(msg):
     uid = msg.from_user.id
@@ -1343,11 +1354,11 @@ def _handle_search_product(msg):
     if prods:
         keyboard = []
         for pid, name, price, stock in prods:
-            keyboard.append([{"text": f"{name} | {price}💎 | {stock}قطعة", "callback_data": f"view_{pid}", "style": "primary", "icon_custom_emoji_id": EMOJI_DIAMOND}])
-        keyboard.append([{"text": "رجوع", "callback_data": "shop", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}])
+            keyboard.append([{"text": f"{name} | {price}💎 | {stock}قطعة", "callback_data": f"view_{pid}"}])
+        keyboard.append([{"text": "رجوع", "callback_data": "shop"}])
         bot.send_message(uid, f'<tg-emoji emoji-id="{EMOJI_TARGET}">🔍</tg-emoji> <b>نتائج البحث عن "{query}"</b>', parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
     else:
-        bot.send_message(uid, f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>لا توجد نتائج</b>', parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "shop", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}]]}))
+        bot.send_message(uid, f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>لا توجد نتائج</b>', parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "shop"}]]}))
 
 def _admin_add_product_name(msg):
     uid = msg.from_user.id
@@ -1399,8 +1410,8 @@ def _admin_add_product_category(msg):
     user_states[uid]["category"] = cat
     keyboard = [
         [
-            {"text": "تلقائي", "callback_data": "delivery_auto", "style": "success", "icon_custom_emoji_id": EMOJI_ROCKET},
-            {"text": "يدوي", "callback_data": "delivery_manual", "style": "primary", "icon_custom_emoji_id": EMOJI_SHIELD}
+            {"text": "تلقائي", "callback_data": "delivery_auto"},
+            {"text": "يدوي", "callback_data": "delivery_manual"}
         ]
     ]
     msg = bot.send_message(uid, f'<tg-emoji emoji-id="{EMOJI_ROCKET}">🚚</tg-emoji> <b>اختر نوع التوصيل</b>', parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
@@ -1445,7 +1456,7 @@ def _admin_add_product_image(msg):
                  int(time.time()), disc))
     conn.commit()
     bot.send_message(uid, f'<tg-emoji emoji-id="{EMOJI_SUCCESS}">✅</tg-emoji> <b>تم إضافة المنتج بنجاح!</b>', parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": _admin_kb()}))
-    del user_states[uid]
+    user_states.pop(uid, None)
 
 def _admin_set_daily_points(msg):
     try:
@@ -1558,11 +1569,11 @@ def _admin_search_user(msg):
             )
             keyboard = []
             if not banned:
-                keyboard.append([{"text": "حظر", "callback_data": f"ban_user_{target_id}", "style": "danger", "icon_custom_emoji_id": EMOJI_FAIL}])
+                keyboard.append([{"text": "حظر", "callback_data": f"ban_user_{target_id}"}])
             else:
-                keyboard.append([{"text": "فك حظر", "callback_data": f"unban_user_{target_id}", "style": "success", "icon_custom_emoji_id": EMOJI_SUCCESS}])
-            keyboard.append([{"text": "تعديل رصيد", "callback_data": f"edit_balance_{target_id}", "style": "primary", "icon_custom_emoji_id": EMOJI_MONEY}])
-            keyboard.append([{"text": "رجوع", "callback_data": "back_admin", "style": "danger", "icon_custom_emoji_id": EMOJI_SHIELD}])
+                keyboard.append([{"text": "فك حظر", "callback_data": f"unban_user_{target_id}"}])
+            keyboard.append([{"text": "تعديل رصيد", "callback_data": f"edit_balance_{target_id}"}])
+            keyboard.append([{"text": "رجوع", "callback_data": "back_admin"}])
             bot.send_message(msg.chat.id, text, parse_mode="HTML", reply_markup=json.dumps({"inline_keyboard": keyboard}))
         else:
             bot.send_message(msg.chat.id, f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>المستخدم غير موجود</b>', parse_mode='HTML')
