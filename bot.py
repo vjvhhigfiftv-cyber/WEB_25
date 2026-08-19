@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import json
 import os
 
-TOKEN = os.getenv("BOT_TOKEN", "").strip()
+TOKEN = os.getenv("BOT_TOKEN", "8697800368:AAHu_2IzR37UuVMKZl7LWTw8R1lJ6TT6yCE").strip()
 if not TOKEN:
     raise RuntimeError(
         "BOT_TOKEN is not set. Add your Telegram bot token as an environment variable."
