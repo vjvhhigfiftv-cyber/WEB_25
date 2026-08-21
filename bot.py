@@ -136,7 +136,34 @@ cur.execute("""CREATE TABLE IF NOT EXISTS withdrawals (
     processed_at INTEGER
 )""")
 
+# أكواد خاصة تعطي نقاط: كل كود يعمل فقط للمستخدمين اللي الأدمن صرّح لهم صراحة
+# (عبر أمر /grant) - يعني وجود الكود لوحده لا يكفي لاستخدامه.
+cur.execute("""CREATE TABLE IF NOT EXISTS special_codes (
+    code TEXT PRIMARY KEY,
+    points INTEGER,
+    is_active INTEGER DEFAULT 1,
+    created_at INTEGER
+)""")
+
+cur.execute("""CREATE TABLE IF NOT EXISTS special_code_access (
+    code TEXT,
+    user_id INTEGER,
+    used INTEGER DEFAULT 0,
+    granted_at INTEGER,
+    used_at INTEGER,
+    PRIMARY KEY (code, user_id)
+)""")
+
 conn.commit()
+
+def _seed_special_codes():
+    now = int(time.time())
+    for code, pts in (("BLACK6002", 600), ("BLACKWEB", 100000)):
+        cur.execute("INSERT OR IGNORE INTO special_codes (code, points, is_active, created_at) VALUES (?, ?, 1, ?)",
+                    (code, pts, now))
+    conn.commit()
+
+_seed_special_codes()
 
 EMOJI_CROWN = "5017184459347199280"
 EMOJI_ROCKET = "5017341470466639017"
@@ -216,9 +243,9 @@ def _seed_initial_products():
         # (name, description, price, original_price, stock, content, category)
         ("اشتراك تلكرام بريميوم - 3 أشهر", "اشتراك رسمي لمدة 3 أشهر مع كل المزايا: تحويلات بدون حدود، ملصقات حصرية، ردود خاصة، سرعة مضاعفة، رفع ملفات حتى 4GB. تسليم تلقائي.", 1200, 1500, 30, "TG-PREM-3M-X9K", "اشتراكات"),
         ("اشتراك تلكرام بريميوم - شهر", "اشتراك رسمي لمدة شهر كامل مع كل المزايا الحصرية. تسليم تلقائي وفوري.", 500, 600, 50, "TG-PREM-1M-Z7A", "اشتراكات"),
-        ("1000 نجمة تيليجرام", "رصيد تيليجرام ستارز 1000 نجمة جاهز للشحن المباشر. تسليم تلقائي فوري.", 800, 1000, 40, "TG-STARS-1000", "نجوم تلكرام"),
-        ("500 نجمة تيليجرام", "رصيد 500 نجمة تيليجرام لتحويلها لقناتك أو لبوتاتك. تسليم تلقائي.", 450, 550, 50, "TG-STARS-500", "نجوم تلكرام"),
-        ("100 نجمة تيليجرام", "رصيد 100 نجمة تيليجرام، مثالي للهدايا السريعة. تسليم تلقائي.", 100, 130, 100, "TG-STARS-100", "نجوم تلكرام"),
+        ("1000 نجمة تيليجرام", "رصيد تيليجرام ستارز 1000 نجمة جاهز للشحن المباشر. تسليم تلقائي فوري.", 8000, 10000, 40, "TG-STARS-1000", "نجوم تلكرام"),
+        ("500 نجمة تيليجرام", "رصيد 500 نجمة تيليجرام لتحويلها لقناتك أو لبوتاتك. تسليم تلقائي.", 4500, 5500, 50, "TG-STARS-500", "نجوم تلكرام"),
+        ("100 نجمة تيليجرام", "رصيد 100 نجمة تيليجرام، مثالي للهدايا السريعة. تسليم تلقائي.", 1000, 1300, 100, "TG-STARS-100", "نجوم تلكرام"),
         ("حزمة ملصقات حصرية - 100 ملصق", "مجموعة ملصقات نادرة وحصرية لإضفاء طابع مميز على محادثاتك.", 150, 200, 75, "STICKERS-PACK-VIP", "ملصقات"),
         ("ثيمات مميزة تلكرام", "ثيمات فاخرة بتصاميم راقية لقنواتك ومحادثاتك.", 200, 250, 30, "THEME-PREMIUM-V2", "ثيمات"),
         ("بوت إدارة قنوات احترافي", "بوت متكامل لإدارة قنواتك: ترحيب تلقائي، حذف سبام، إحصائيات، أوامر إدارية متقدمة.", 1800, 2500, 10, "ADMIN-BOT-XL", "بوتات"),
@@ -228,7 +255,7 @@ def _seed_initial_products():
         ("اشتراك بريميوم 6 أشهر + هدايا", "اشتراك بريميوم لمدة 6 أشهر كاملة مع بونص 200 نجمة هدبة.", 2200, 2800, 15, "PREM-6M-BONUS", "اشتراكات"),
         ("باقة بلاك الذهبية - عرض حصري", "حزمة متكاملة: بريميوم 3 أشهر + 500 نجمة + ملصقات حصرية + ثيم مميز بـ 2400 بدل 3200.", 2400, 3200, 20, "BLACK-GOLD-BUNDLE", "عروض بلاك"),
         ("باقة بلاك الفضية", "بريميوم شهر + 100 نجمة + مؤسسة ملصقات بـ 850 بدل 1200.", 850, 1200, 35, "BLACK-SILVER-BUNDLE", "عروض بلاك"),
-        ("حزمة نجوم كبار - 5000 نجمة", "رصيد 5000 نجمة تيليجرام بسعر مخفض. شحن فوري لقناتك.", 3500, 4500, 10, "TG-STARS-5000", "نجوم تلكرام"),
+        ("حزمة نجوم كبار - 5000 نجمة", "رصيد 5000 نجمة تيليجرام بسعر مخفض. شحن فوري لقناتك.", 35000, 45000, 10, "TG-STARS-5000", "نجوم تلكرام"),
         ("عرض دخول دردشة 𝑩𝑳𝑨𝑪𝑲 VIP", "انضم لدردشة بلاك VIP عبر الرابط https://t.me/blacke13 واحصل على محتوى حصري ومكافآت يومية.", 0, 0, 9999, "https://t.me/blacke13", "عروض حصرية"),
     ]
     for name, desc, price, oprice, stock, content, cat in initial_products:
@@ -645,9 +672,15 @@ def _cb_handler(call):
             [{"text": f"انضم لدردشة بلاك - {CHAT_BONUS_AMOUNT}💎", "callback_data": "chat_bonus"}],
             [{"text": "تفعيل كوبون", "callback_data": "activate_coupon"}],
             [{"text": "روابط النقاط", "callback_data": "points_links"}],
+            [{"text": "🔑 كود خاص", "callback_data": "special_code_menu"}],
             [{"text": "🌐 موقع بلاك ويب", "url": WEBSITE_URL}, {"text": "رجوع", "callback_data": "back_main"}]
         ]
-        bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_GIFT}">🎁</tg-emoji> <b>المكافآت والجوائز</b>\n<blockquote expandable>\n🎁 جائزة يومية\n👑 انضم لدردشة بلاك واحصل على {CHAT_BONUS_AMOUNT} {_cfg("currency")} هدية\n🎫 كوبونات خصم\n🔗 روابط نقاط\n</blockquote>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
+        bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_GIFT}">🎁</tg-emoji> <b>المكافآت والجوائز</b>\n<blockquote expandable>\n🎁 جائزة يومية\n👑 انضم لدردشة بلاك واحصل على {CHAT_BONUS_AMOUNT} {_cfg("currency")} هدية\n🎫 كوبونات خصم\n🔗 روابط نقاط\n🔑 كود خاص\n</blockquote>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": keyboard}))
+    
+    elif data == "special_code_menu":
+        msg = bot.edit_message_text(f'<tg-emoji emoji-id="{EMOJI_KEY}">🔑</tg-emoji> <b>أرسل الكود الخاص</b>', uid, call.message.message_id, parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": [[{"text": "رجوع", "callback_data": "rewards_menu"}]]}))
+        user_states[uid] = {"action": "special_code"}
+        bot.register_next_step_handler(msg, _handle_special_code_input)
     
     elif data == "daily":
         st = _cfg("daily_status")
@@ -1295,6 +1328,36 @@ def _handle_coupon_activation(msg):
     else:
         bot.send_message(uid, f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>كوبون غير صالح</b>', parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": _main_kb()}))
 
+def _handle_special_code_input(msg):
+    uid = msg.from_user.id
+    code = msg.text.strip().upper()
+    cur.execute("SELECT code, points, is_active FROM special_codes WHERE code = ?", (code,))
+    row = cur.fetchone()
+    if not row or not row[2]:
+        bot.send_message(uid, f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>كود غير صالح</b>', parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": _main_kb()}))
+        return
+    _, points, _active = row
+    # الكود صحيح لكن غير كافٍ لوحده: لازم يكون الأدمن صرّح لهذا المستخدم تحديداً
+    # عبر أمر /grant، وإلا يُرفض حتى لو كان نص الكود صحيح.
+    cur.execute("SELECT used FROM special_code_access WHERE code = ? AND user_id = ?", (code, uid))
+    access = cur.fetchone()
+    if not access:
+        bot.send_message(uid, f'<tg-emoji emoji-id="{EMOJI_FAIL}">🚫</tg-emoji> <b>هذا الكود غير مصرّح لحسابك</b>\n<blockquote>تواصل مع @{DEVELOPER_USERNAME} إذا كنت تملك صلاحية استخدامه</blockquote>', parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": _main_kb()}))
+        return
+    if access[0]:
+        bot.send_message(uid, f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>سبق أن استخدمت هذا الكود</b>', parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": _main_kb()}))
+        return
+    now = int(time.time())
+    cur.execute("UPDATE users SET balance = balance + ?, total_earned = total_earned + ? WHERE user_id = ?", (points, points, uid))
+    cur.execute("UPDATE special_code_access SET used = 1, used_at = ? WHERE code = ? AND user_id = ?", (now, code, uid))
+    conn.commit()
+    add_notification(uid, f"تم استخدام كود خاص: +{points} {_cfg('currency')}")
+    bot.send_message(uid, f'<tg-emoji emoji-id="{EMOJI_GIFT}">🎉</tg-emoji> <b>تم تفعيل الكود! حصلت على {points} {_cfg("currency")}</b>', parse_mode='HTML', reply_markup=json.dumps({"inline_keyboard": _main_kb()}))
+    try:
+        bot.send_message(ADMIN_ID, f'<tg-emoji emoji-id="{EMOJI_KEY}">🔑</tg-emoji> <b>استخدام كود خاص</b>\n<blockquote>المستخدم: <code>{uid}</code>\nالكود: {code}\nالنقاط: {points}</blockquote>', parse_mode='HTML')
+    except Exception:
+        pass
+
 def _handle_ticket_subject(msg):
     uid = msg.from_user.id
     subject = msg.text.strip()
@@ -1591,6 +1654,78 @@ def _cmd_shlhom(msg):
 @bot.message_handler(commands=["id"])
 def _cmd_id(msg):
     bot.reply_to(msg, f'<tg-emoji emoji-id="{EMOJI_TARGET}">🆔</tg-emoji> <b>معرفك:</b> <code>{msg.from_user.id}</code>', parse_mode='HTML')
+
+@bot.message_handler(commands=["grant"])
+def _cmd_grant(msg):
+    """تصريح مستخدم معيّن باستخدام كود خاص. الاستخدام: /grant <الكود> <آيدي المستخدم>"""
+    uid = msg.from_user.id
+    if not is_admin(uid):
+        bot.reply_to(msg, f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>غير مصرح لك</b>', parse_mode='HTML')
+        return
+    parts = msg.text.split()
+    if len(parts) != 3:
+        bot.reply_to(msg, f'<tg-emoji emoji-id="{EMOJI_WARNING}">⚠️</tg-emoji> <b>الاستخدام:</b>\n<code>/grant الكود آيدي_المستخدم</code>', parse_mode='HTML')
+        return
+    code = parts[1].strip().upper()
+    try:
+        target_id = int(parts[2].strip())
+    except ValueError:
+        bot.reply_to(msg, f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>آيدي غير صالح</b>', parse_mode='HTML')
+        return
+    cur.execute("SELECT points FROM special_codes WHERE code = ?", (code,))
+    row = cur.fetchone()
+    if not row:
+        bot.reply_to(msg, f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>هذا الكود غير موجود</b>', parse_mode='HTML')
+        return
+    cur.execute("INSERT OR IGNORE INTO special_code_access (code, user_id, used, granted_at) VALUES (?, ?, 0, ?)",
+                (code, target_id, int(time.time())))
+    conn.commit()
+    bot.reply_to(msg, f'<tg-emoji emoji-id="{EMOJI_SUCCESS}">✅</tg-emoji> <b>تم التصريح</b>\n<blockquote>الكود: {code}\nالنقاط: {row[0]}\nالمستخدم: <code>{target_id}</code>\n</blockquote>\nيمكنه الآن إدخال الكود من قائمة المكافآت ← 🔑 كود خاص.', parse_mode='HTML')
+    try:
+        bot.send_message(target_id, f'<tg-emoji emoji-id="{EMOJI_KEY}">🔑</tg-emoji> <b>تم منحك صلاحية استخدام كود خاص!</b>\n<blockquote>ادخل قائمة المكافآت ← 🔑 كود خاص، وأرسل الكود الذي أعطاك إياه الأدمن.</blockquote>', parse_mode='HTML')
+    except Exception:
+        pass
+
+@bot.message_handler(commands=["revoke"])
+def _cmd_revoke(msg):
+    """إلغاء تصريح مستخدم لكود خاص. الاستخدام: /revoke <الكود> <آيدي المستخدم>"""
+    uid = msg.from_user.id
+    if not is_admin(uid):
+        bot.reply_to(msg, f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>غير مصرح لك</b>', parse_mode='HTML')
+        return
+    parts = msg.text.split()
+    if len(parts) != 3:
+        bot.reply_to(msg, f'<tg-emoji emoji-id="{EMOJI_WARNING}">⚠️</tg-emoji> <b>الاستخدام:</b>\n<code>/revoke الكود آيدي_المستخدم</code>', parse_mode='HTML')
+        return
+    code = parts[1].strip().upper()
+    try:
+        target_id = int(parts[2].strip())
+    except ValueError:
+        bot.reply_to(msg, f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>آيدي غير صالح</b>', parse_mode='HTML')
+        return
+    cur.execute("DELETE FROM special_code_access WHERE code = ? AND user_id = ?", (code, target_id))
+    conn.commit()
+    bot.reply_to(msg, f'<tg-emoji emoji-id="{EMOJI_SUCCESS}">✅</tg-emoji> <b>تم إلغاء تصريح</b> <code>{target_id}</code> <b>لكود</b> {code}', parse_mode='HTML')
+
+@bot.message_handler(commands=["grants"])
+def _cmd_grants(msg):
+    """عرض المصرّح لهم بكود معيّن. الاستخدام: /grants <الكود>"""
+    uid = msg.from_user.id
+    if not is_admin(uid):
+        bot.reply_to(msg, f'<tg-emoji emoji-id="{EMOJI_FAIL}">❌</tg-emoji> <b>غير مصرح لك</b>', parse_mode='HTML')
+        return
+    parts = msg.text.split()
+    if len(parts) != 2:
+        bot.reply_to(msg, f'<tg-emoji emoji-id="{EMOJI_WARNING}">⚠️</tg-emoji> <b>الاستخدام:</b>\n<code>/grants الكود</code>', parse_mode='HTML')
+        return
+    code = parts[1].strip().upper()
+    cur.execute("SELECT user_id, used FROM special_code_access WHERE code = ? ORDER BY granted_at DESC LIMIT 50", (code,))
+    rows = cur.fetchall()
+    if not rows:
+        bot.reply_to(msg, f'<tg-emoji emoji-id="{EMOJI_WARNING}">⚠️</tg-emoji> <b>لا يوجد مصرّح لهم بهذا الكود بعد</b>', parse_mode='HTML')
+        return
+    lines = "\n".join(f'• <code>{u}</code> - {"استخدمه" if used else "لم يستخدمه بعد"}' for u, used in rows)
+    bot.reply_to(msg, f'<tg-emoji emoji-id="{EMOJI_KEY}">🔑</tg-emoji> <b>المصرّح لهم بكود {code}</b>\n<blockquote expandable>\n{lines}\n</blockquote>', parse_mode='HTML')
 
 print(f"""
 ╔══════════════════════════════════════╗
